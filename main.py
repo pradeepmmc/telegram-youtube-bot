@@ -2,6 +2,7 @@ import yt_dlp
 import os
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
+from gtts import gTTS # අලුතින් එකතු කළ import එක
 
 TOKEN = os.getenv("BOT_TOKEN")
 COOKIES_FILE = "cookies.txt"
@@ -17,10 +18,41 @@ def load_cookies():
         print("No YOUTUBE_COOKIES found in environment. Running without cookies.")
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Bot is alive! Link එකක් එවපන් MP3 ගන්න. 🎧")
+    # Start මැසේජ් එකත් පොඩ්ඩක් වෙනස් කරා අලුත් කමාන්ඩ් එක පෙන්වන්න
+    await update.message.reply_text("Bot is alive! \n👉 Link එකක් එවපන් MP3 ගන්න.\n👉 /speak කියලා ටයිප් කරලා වචන දීලා Voice එකක් ගන්න. 🎧")
 
 async def ping(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Pong! 🏓")
+
+# --- අලුතින් එකතු කළ Voice Function එක ---
+async def speak(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    # /speak කමාන්ඩ් එකට පස්සේ තියෙන වචන ටික ගන්නවා
+    text = " ".join(context.args)
+    
+    if not text:
+        await update.message.reply_text("කරුණාකර /speak එකට පස්සේ මොනවා හරි ටයිප් කරන්න.\nඋදා: /speak කොහොමද ඔයාට")
+        return
+    
+    msg = await update.message.reply_text("Voice එක හදනවා... 🎙️")
+    filename = "voice.mp3"
+    
+    try:
+        # Text එක Voice එකට හරවනවා (lang='si' කියන්නේ සිංහල)
+        tts = gTTS(text=text, lang='si')
+        tts.save(filename)
+        
+        # හැදුන Voice මැසේජ් එක ටෙලිග්‍රෑම් එකට යවනවා
+        await context.bot.send_voice(chat_id=update.effective_chat.id, voice=open(filename, 'rb'))
+        await msg.delete()
+        
+    except Exception as e:
+        await msg.edit_text(f"Error: {str(e)}")
+        
+    finally:
+        # සර්වර් එකේ ඉඩ ඉතුරු කරන්න හැදුන ෆයිල් එක මකනවා
+        if os.path.exists(filename):
+            os.remove(filename)
+# ------------------------------------------
 
 async def download(update: Update, context: ContextTypes.DEFAULT_TYPE):
     url = update.message.text
@@ -35,7 +67,7 @@ async def download(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # ඩවුන්ලෝඩ් Option ටික සකස් කිරීම
     ydl_opts = {
         'format': 'bestaudio/best',
-        'outtmpl': '%(id)s.%(ext)s',  # Multi-user crash නොවෙන්න Video ID එක පාවිච්චි කරනවා
+        'outtmpl': '%(id)s.%(ext)s',  
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'mp3',
@@ -45,17 +77,14 @@ async def download(update: Update, context: ContextTypes.DEFAULT_TYPE):
         'noplaylist': True,
     }
     
-    # Cookies ෆයිල් එකක් තිබේ නම් පමණක් එය එක් කරයි
     if os.path.exists(COOKIES_FILE):
         ydl_opts['cookiefile'] = COOKIES_FILE
     
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=True)
-            # yt-dlp මඟින් අවසානයේ ලැබෙන නිවැරදිම mp3 file path එක ලබා ගැනීම
             filename = ydl.prepare_filename(info).rsplit(".", 1)[0] + ".mp3"
         
-        # Audio එක Telegram එකට Send කිරීම
         await context.bot.send_audio(
             chat_id=update.effective_chat.id, 
             audio=open(filename, 'rb'),
@@ -68,12 +97,11 @@ async def download(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await msg.edit_text(f"Error: {str(e)}\n\nCookies Expire වෙලා වෙන්න පුළුවන්. නැත්නම් FFmpeg අවුලක්.")
     
     finally:
-        # සර්වර් එකේ ඉඩ ඉතිරි කර ගැනීමට ෆයිල් එක අනිවාර්යයෙන්ම මකා දැමීම
         if filename and os.path.exists(filename):
             os.remove(filename)
 
 if __name__ == '__main__':
-    load_cookies()  # Bot Start වෙනකොට Cookies File එක හදනවා
+    load_cookies()  
     
     if not TOKEN:
         print("Error: BOT_TOKEN environment variable is missing!")
@@ -83,6 +111,7 @@ if __name__ == '__main__':
     
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("ping", ping))
+    app.add_handler(CommandHandler("speak", speak)) # අලුතින් එකතු කළ Handler එක
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, download))
     
     print("Bot is running successfully...")
