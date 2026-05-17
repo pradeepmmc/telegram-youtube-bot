@@ -38,7 +38,7 @@ async def speak(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # පිරිමි කටහඬට ඕන නම්: 'si-LK-SameeraNeural'
         # ගැහැණු කටහඬට ඕන නම්: 'si-LK-ThiliniNeural'
         
-        voice = 'si-LK-SameeraNeural' 
+        voice = 'si-LK-ThiliniNeural' 
         
         communicate = edge_tts.Communicate(text, voice)
         await communicate.save(filename)
