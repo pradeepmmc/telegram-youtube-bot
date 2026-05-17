@@ -2,31 +2,28 @@ import yt_dlp
 import os
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
-from gtts import gTTS # අලුතින් එකතු කළ import එක
+import edge_tts # අලුත් Microsoft Voice පැකේජ් එක
 
 TOKEN = os.getenv("BOT_TOKEN")
 COOKIES_FILE = "cookies.txt"
 
 def load_cookies():
-    """Railway Variable එකෙන් Cookies File එක හදනවා"""
     cookies = os.getenv("YOUTUBE_COOKIES")
     if cookies:
         with open(COOKIES_FILE, "w", encoding="utf-8") as f:
             f.write(cookies)
         print("Cookies file created successfully.")
     else:
-        print("No YOUTUBE_COOKIES found in environment. Running without cookies.")
+        print("No YOUTUBE_COOKIES found in environment.")
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # Start මැසේජ් එකත් පොඩ්ඩක් වෙනස් කරා අලුත් කමාන්ඩ් එක පෙන්වන්න
     await update.message.reply_text("Bot is alive! \n👉 Link එකක් එවපන් MP3 ගන්න.\n👉 /speak කියලා ටයිප් කරලා වචන දීලා Voice එකක් ගන්න. 🎧")
 
 async def ping(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Pong! 🏓")
 
-# --- අලුතින් එකතු කළ Voice Function එක ---
+# --- අලුත් Microsoft Edge TTS Function එක ---
 async def speak(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # /speak කමාන්ඩ් එකට පස්සේ තියෙන වචන ටික ගන්නවා
     text = " ".join(context.args)
     
     if not text:
@@ -37,11 +34,15 @@ async def speak(update: Update, context: ContextTypes.DEFAULT_TYPE):
     filename = "voice.mp3"
     
     try:
-        # Text එක Voice එකට හරවනවා (lang='si' කියන්නේ සිංහල)
-        tts = gTTS(text=text, lang='si')
-        tts.save(filename)
+        # මෙතනින් ඔයාට කටහඬ මාරු කරන්න පුළුවන්:
+        # පිරිමි කටහඬට ඕන නම්: 'si-LK-SameeraNeural'
+        # ගැහැණු කටහඬට ඕන නම්: 'si-LK-ThiliniNeural'
         
-        # හැදුන Voice මැසේජ් එක ටෙලිග්‍රෑම් එකට යවනවා
+        voice = 'si-LK-SameeraNeural' 
+        
+        communicate = edge_tts.Communicate(text, voice)
+        await communicate.save(filename)
+        
         await context.bot.send_voice(chat_id=update.effective_chat.id, voice=open(filename, 'rb'))
         await msg.delete()
         
@@ -49,7 +50,6 @@ async def speak(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await msg.edit_text(f"Error: {str(e)}")
         
     finally:
-        # සර්වර් එකේ ඉඩ ඉතුරු කරන්න හැදුන ෆයිල් එක මකනවා
         if os.path.exists(filename):
             os.remove(filename)
 # ------------------------------------------
@@ -64,7 +64,6 @@ async def download(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = await update.message.reply_text("Downloading... ⏳")
     filename = None
     
-    # ඩවුන්ලෝඩ් Option ටික සකස් කිරීම
     ydl_opts = {
         'format': 'bestaudio/best',
         'outtmpl': '%(id)s.%(ext)s',  
@@ -111,7 +110,7 @@ if __name__ == '__main__':
     
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("ping", ping))
-    app.add_handler(CommandHandler("speak", speak)) # අලුතින් එකතු කළ Handler එක
+    app.add_handler(CommandHandler("speak", speak)) 
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, download))
     
     print("Bot is running successfully...")
