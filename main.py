@@ -5,6 +5,16 @@ from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, Con
 
 TOKEN = os.getenv("BOT_TOKEN")
 
+def load_cookies():
+    """Railway Variable එකෙන් Cookies File එක හදනවා"""
+    cookies = os.getenv("YOUTUBE_COOKIES")
+    if cookies:
+        with open("cookies.txt", "w", encoding="utf-8") as f:
+            f.write(cookies)
+        print("Cookies file created successfully")
+    else:
+        print("No YOUTUBE_COOKIES found in environment")
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Bot is alive! Link එකක් එවපන් MP3 ගන්න.")
 
@@ -28,7 +38,7 @@ async def download(update: Update, context: ContextTypes.DEFAULT_TYPE):
             'preferredcodec': 'mp3',
             'preferredquality': '192',
         }],
-        'cookiesfrombrowser': ('chrome',),  # Chrome Cookies Use කරනවා
+        'cookiefile': 'cookies.txt', # Railway Cookies Use කරනවා
         'quiet': True,
         'noplaylist': True,
     }
@@ -36,20 +46,24 @@ async def download(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=True)
-            filename = ydl.prepare_filename(info).replace('.webm', '.mp3').replace('.m4a', '.mp3')
+            filename = ydl.prepare_filename(info)
+            # Extension එක mp3 වලට Change කරනවා
+            filename = filename.rsplit(".", 1)[0] + ".mp3"
         
         await context.bot.send_audio(chat_id=update.effective_chat.id, audio=open(filename, 'rb'))
         os.remove(filename)
         await msg.delete()
         
     except Exception as e:
-        await msg.edit_text(f"Error: {str(e)}\n\nCookies Expire වෙලා වෙන්න පුළුවන්. Bot Owner ට කියපන්.")
+        await msg.edit_text(f"Error: {str(e)}\n\nCookies Expire වෙලා වෙන්න පුළුවන්. අලුත් Cookies දාපන්.")
 
 if __name__ == '__main__':
+    load_cookies() # Bot Start වෙනකොට Cookies File එක හදනවා
     app = ApplicationBuilder().token(TOKEN).build()
     
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("ping", ping))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, download))
     
+    print("Bot is running...")
     app.run_polling()
