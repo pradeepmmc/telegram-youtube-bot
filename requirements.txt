@@ -6,3 +6,4 @@ yt-dlp
 ffmpeg-python
 browser-cookie3
 edge-tts
+gTTS
