@@ -3,7 +3,7 @@ import yt_dlp
 import os
 
 # ඔබේ Telegram Bot Token එක මෙතනට ඇතුලත් කරන්න
-BOT_TOKEN = "8805960253:AAFJsNNVQUbmTQuHaaE1OJp1yPq56q3BQDM"
+BOT_TOKEN = "8814569576:AAEP-4qn64z8OramKIi2x063OOwbZq894Rk"
 bot = telebot.TeleBot(BOT_TOKEN)
 
 @bot.message_handler(commands=['start'])
