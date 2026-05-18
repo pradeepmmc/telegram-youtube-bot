@@ -100,7 +100,7 @@ async def download(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if filename and os.path.exists(filename):
             os.remove(filename)
 
-if name == 'main':
+if __name__ == '__main__':
     load_cookies()  
     
     if not TOKEN:
