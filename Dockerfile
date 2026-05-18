@@ -16,3 +16,5 @@ COPY . .
 
 # Bot ව Run කරන කමාන්ඩ් එක
 CMD ["python", "main.py"]
+
+RUN pip install -r requirements.txt
