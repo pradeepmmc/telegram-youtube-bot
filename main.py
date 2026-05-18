@@ -4,7 +4,7 @@ import os
 
 # Railway Environment Variables වලින් Token එක ආරක්ෂිතව ලබා ගැනීම
 BOT_TOKEN = os.getenv("8814569576:AAEP-4qn64z8OramKIi2x063OOwbZq894Rk")
-bot = telebot.TeleBot(BOT_TOKEN)
+bot = telebot.TeleBot(8814569576:AAEP-4qn64z8OramKIi2x063OOwbZq894Rk)
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
