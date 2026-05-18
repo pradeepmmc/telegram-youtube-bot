@@ -12,9 +12,9 @@ def load_cookies():
     if cookies:
         with open(COOKIES_FILE, "w", encoding="utf-8") as f:
             f.write(cookies)
-        print("Cookies file created successfully.")
+        print("Cookies file created successfully from environment variable.")
     else:
-        print("No YOUTUBE_COOKIES found in environment.")
+        print("No YOUTUBE_COOKIES found in environment. Bot will use the manually uploaded cookies.txt file.")
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Bot is alive! \n👉 Link එකක් එවපන් MP3 ගන්න.\n👉 /speak කියලා ටයිප් කරලා වචන දීලා Voice එකක් ගන්න. 🎧")
@@ -76,6 +76,7 @@ async def download(update: Update, context: ContextTypes.DEFAULT_TYPE):
         'noplaylist': True,
     }
     
+    # Cookies ෆයිල් එක භාවිතා කිරීම
     if os.path.exists(COOKIES_FILE):
         ydl_opts['cookiefile'] = COOKIES_FILE
     
@@ -99,7 +100,7 @@ async def download(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if filename and os.path.exists(filename):
             os.remove(filename)
 
-if __name__ == '__main__':
+if name == 'main':
     load_cookies()  
     
     if not TOKEN:
