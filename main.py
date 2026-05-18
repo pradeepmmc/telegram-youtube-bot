@@ -2,9 +2,9 @@ import telebot
 import yt_dlp
 import os
 
-# Railway Environment Variables වලින් Token එක ආරක්ෂිතව ලබා ගැනීම
-BOT_TOKEN = os.getenv("8814569576:AAEP-4qn64z8OramKIi2x063OOwbZq894Rk")
-bot = telebot.TeleBot(8814569576:AAEP-4qn64z8OramKIi2x063OOwbZq894Rk)
+# ඔයාගේ Telegram Bot Token එක කෙලින්ම මෙතනට නිවැරදිව ඇතුලත් කර ඇත
+BOT_TOKEN = "8814569576:AAEP-4qn64z8OramKli2x063OOwbZq894Rk"
+bot = telebot.TeleBot(BOT_TOKEN)
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
@@ -49,7 +49,6 @@ def download_audio(message):
         bot.delete_message(chat_id=message.chat.id, message_id=status_msg.message_id)
 
     except Exception as e:
-        # වැරැද්දක් ආවොත් බලාගන්න ලොග් එකක් දාමු
         print(f"Error occurred: {str(e)}")
         bot.edit_message_text(f"❌ Error: ඩවුන්ලෝඩ් කිරීමේදී දෝෂයක් ඇතිවිය.\n(විස්තරය: {str(e)[:100]})", 
                               chat_id=message.chat.id, 
