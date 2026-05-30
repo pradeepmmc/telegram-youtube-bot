@@ -1,5 +1,6 @@
 pyTelegramBotAPI
-yt-dlp>=2024.04.09
+yt-dlp>=2026
+.04.09
 google-api-python-client==2.130.0
 google-auth-httplib2==0.2.0
 google-auth-oauthlib==1.2.0
