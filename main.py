@@ -139,22 +139,52 @@ def callback_query(call):
                 bot.send_audio(call.message.chat.id, audio, title=title, performer=info.get('uploader'))
             filename = filename_mp3 # cleanup සඳහා නම update කිරීම
         else:
-            # Video size check (Telegram free API limit is ~50MB)
-            filesize_mb = os.path.getsize(filename) / (1024 * 1024)
-            if filesize_mb > 50:
-                bot.send_message(call.message.chat.id, f"⚠️ Video is too large ({filesize_mb:.1f}MB) for Telegram's free API limit (50MB). Only small videos can be sent.")
-            else:
-                with open(filename, 'rb') as video:
-                    bot.send_video(call.message.chat.id, video, caption=title)
+import telebot
+import yt_dlp
+import os
+
+# ඔබේ බොට් ටෝකන් එක මෙතැනට දමන්න
+TOKEN = 'ඔබේ_BotFather_Token_එක'
+bot = telebot.TeleBot(TOKEN)
+
+def download_video(url):
+    ydl_opts = {
+        'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+        'outtmpl': 'downloaded_video.mp4',
+    }
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        info = ydl.extract_info(url, download=True)
+        return 'downloaded_video.mp4', info.get('title', 'Video')
+
+@bot.message_handler(commands=['start', 'help'])
+def send_welcome(message):
+    bot.reply_to(message, "සුබ දවසක්! මට YouTube ලින්ක් එකක් එවන්න, මම ඒක බාගත කර ඔබ වෙත එවන්නම්.")
+
+@bot.message_handler(func=lambda message: "youtube.com" in message.text or "youtu.be" in message.text)
+def handle_youtube_link(message):
+    status_msg = bot.reply_to(message, "⏳ කරුණාකර රැඳී සිටින්න, මම වීඩියෝව සකසමින් පවතිමි...")
+    filename = None
+    
+    try:
+        url = message.text
+        filename, title = download_video(url)
         
-        bot.delete_message(chat_id=call.message.chat.id, message_id=status_msg.message_id)
+        # වීඩියෝ ප්‍රමාණය පරීක්ෂා කිරීම (Telegram API limit: 50MB)
+        filesize_mb = os.path.getsize(filename) / (1024 * 1024)
+        
+        if filesize_mb > 50:
+            bot.send_message(message.chat.id, f"⚠️ වීඩියෝව විශාල වැඩියි ({filesize_mb:.1f}MB). ටෙලිග්‍රෑම් සීමාව 50MB කි.")
+        else:
+            with open(filename, 'rb') as video:
+                bot.send_video(message.chat.id, video, caption=title)
+        
+        bot.delete_message(chat_id=message.chat.id, message_id=status_msg.message_id)
 
     except Exception as e:
         print(f"Download Error: {str(e)}")
-        bot.edit_message_text(f"❌ Error: ඩවුන්ලෝඩ් කිරීමේදී දෝෂයක් ඇතිවිය.\n(විස්තරය: {str(e)[:100]})", 
-                              chat_id=call.message.chat.id, 
+        bot.edit_message_text(f"❌ දෝෂයක් ඇතිවිය: {str(e)[:100]}", 
+                              chat_id=message.chat.id, 
                               message_id=status_msg.message_id)
-
     finally:
         # cleanup: ෆයිල් එක මකා දැමීම
         if filename and os.path.exists(filename):
