@@ -3,7 +3,7 @@ import yt_dlp
 import os
 
 # ⚠️ ඔයාගේ අලුත් Token එක මෙතනට දෙන්න (කලින් එක Revoke කරන්න)
-BOT_TOKEN = "YOUR_NEW_TOKEN_HERE" 
+BOT_TOKEN = "8805960253:AAGIhrdk0mfRt3q-bOgQ7KxBY2ZfkktJnxY" 
 bot = telebot.TeleBot(BOT_TOKEN)
 
 @bot.message_handler(commands=['start'])
