@@ -2,9 +2,8 @@ import telebot
 import yt_dlp
 import os
 
-# ආරක්ෂාව සඳහා Token එක කෙලින්ම නොදා Environment Variables භාවිතය වඩා හොඳයි.
-# දැනට පරීක්ෂා කිරීම සඳහා පමණක් ඔයාගේ අලුත් Token එක මෙතන දාන්න:
-BOT_TOKEN = "YOUR_NEW_TOKEN_HERE" 
+# ඔයාගේ අලුත් Token එක මෙතනට දෙන්න
+BOT_TOKEN = "8805960253:AAFl43KRADa__KJRP5JVWAq2GXxjzfLe7nM" 
 bot = telebot.TeleBot(BOT_TOKEN)
 
 @bot.message_handler(commands=['start'])
@@ -61,28 +60,6 @@ def download_audio(message):
         if filename and os.path.exists(filename):
             os.remove(filename) 
             print(f"Deleted local file: {filename}")
-
-print("Bot is running...")
-bot.infinity_polling()
-            filename = os.path.splitext(filename)[0] + '.mp3'
-
-        bot.edit_message_text("✅ Audio downloaded.\n✅ Processing and optimization\n✅ Uploading to Telegram...", 
-                              chat_id=message.chat.id, 
-                              message_id=status_msg.message_id)
-
-        with open(filename, 'rb') as audio:
-            bot.send_audio(message.chat.id, audio, title=info.get('title'), performer=info.get('uploader'))
-        
-        if os.path.exists(filename):
-            os.remove(filename) 
-        
-        bot.delete_message(chat_id=message.chat.id, message_id=status_msg.message_id)
-
-    except Exception as e:
-        print(f"Error occurred: {str(e)}")
-        bot.edit_message_text(f"❌ Error: ඩවුන්ලෝඩ් කිරීමේදී දෝෂයක් ඇතිවිය.\n(විස්තරය: {str(e)[:100]})", 
-                              chat_id=message.chat.id, 
-                              message_id=status_msg.message_id)
 
 print("Bot is running...")
 bot.infinity_polling()
