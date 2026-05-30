@@ -22,7 +22,7 @@ def download_audio(message):
 
     # 🍪 මෙන්න මෙතනට තමයි cookies.txt එකතු කරලා තියෙන්නේ
     ydl_opts = {
-        'format': 'bestaudio/best',
+        'format': 'bestaudio',
         'outtmpl': '%(title)s.%(ext)s',
         'cookiefile': 'cookies.txt',  # <-- Cookies ලබා ගන්නා ෆයිල් එක
         'postprocessors': [{
