@@ -5,7 +5,7 @@ import os
 import requests # Thumbnail එක check කිරීමට
 
 # ⚠️ ඔයාගේ අලුත් Token එක මෙතනට දෙන්න (කලින් එක Revoke කරන්න)
-BOT_TOKEN = "8805960253:AAGIhrdk0mfRt3q-bOgQ7KxBY2ZfkktJnxY" 
+BOT_TOKEN = "8759602899:AAHB4en767TTNxuPv71pBhYvrIb6_IIEMyM" 
 bot = telebot.TeleBot(BOT_TOKEN)
 
 # ඩවුන්ලෝඩ් බොත්තම් දෙක හදන function එක
