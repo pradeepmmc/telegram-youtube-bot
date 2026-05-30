@@ -2,8 +2,9 @@ import telebot
 import yt_dlp
 import os
 
-# ඔයාගේ Telegram Bot Token එක කෙලින්ම මෙතනට නිවැරදිව ඇතුලත් කර ඇත
-BOT_TOKEN = "8814569576:AAEP-4qn64z8OramKli2x063OOwbZq894Rk"
+# ආරක්ෂාව සඳහා Token එක කෙලින්ම නොදා Environment Variables භාවිතය වඩා හොඳයි.
+# දැනට පරීක්ෂා කිරීම සඳහා පමණක් ඔයාගේ අලුත් Token එක මෙතන දාන්න:
+BOT_TOKEN = "YOUR_NEW_TOKEN_HERE" 
 bot = telebot.TeleBot(BOT_TOKEN)
 
 @bot.message_handler(commands=['start'])
@@ -26,14 +27,43 @@ def download_audio(message):
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'mp3',
-            'preferredquality': '192',
+            'preferredquality': '192', # '192' තත්ත්වයෙන් audio ලබාගනී
         }],
     }
 
+    filename = None # ෆයිල් නාමය මුලින් None ලෙස තබාගන්න
+
     try:
+        # වීඩියෝව ඩවුන්ලෝඩ් කර MP3 බවට හැරවීම
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=True)
-            filename = ydl.prepare_filename(info)
+            temp_filename = ydl.prepare_filename(info)
+            filename = os.path.splitext(temp_filename)[0] + '.mp3'
+
+        bot.edit_message_text("✅ Audio downloaded.\n✅ Processing and optimization\n✅ Uploading to Telegram...", 
+                              chat_id=message.chat.id, 
+                              message_id=status_msg.message_id)
+
+        # Telegram වෙත යැවීම
+        with open(filename, 'rb') as audio:
+            bot.send_audio(message.chat.id, audio, title=info.get('title'), performer=info.get('uploader'))
+        
+        bot.delete_message(chat_id=message.chat.id, message_id=status_msg.message_id)
+
+    except Exception as e:
+        print(f"Error occurred: {str(e)}")
+        bot.edit_message_text(f"❌ Error: ඩවුන්ලෝඩ් කිරීමේදී දෝෂයක් ඇතිවිය.\n(විස්තරය: {str(e)[:100]})", 
+                              chat_id=message.chat.id, 
+                              message_id=status_msg.message_id)
+                              
+    finally:
+        # Error එකක් ආවත් නැතත්, අවසානයේදී නිර්මාණය වූ ෆයිල් එක මකා දැමීම 
+        if filename and os.path.exists(filename):
+            os.remove(filename) 
+            print(f"Deleted local file: {filename}")
+
+print("Bot is running...")
+bot.infinity_polling()
             filename = os.path.splitext(filename)[0] + '.mp3'
 
         bot.edit_message_text("✅ Audio downloaded.\n✅ Processing and optimization\n✅ Uploading to Telegram...", 
