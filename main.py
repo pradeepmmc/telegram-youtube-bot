@@ -2,8 +2,8 @@ import telebot
 import yt_dlp
 import os
 
-# ඔයාගේ අලුත් Token එක මෙතනට දෙන්න
-BOT_TOKEN = "8805960253:AAFl43KRADa__KJRP5JVWAq2GXxjzfLe7nM" 
+# ⚠️ ඔයාගේ අලුත් Token එක මෙතනට දෙන්න (කලින් එක Revoke කරන්න)
+BOT_TOKEN = "YOUR_NEW_TOKEN_HERE" 
 bot = telebot.TeleBot(BOT_TOKEN)
 
 @bot.message_handler(commands=['start'])
@@ -20,9 +20,11 @@ def download_audio(message):
 
     status_msg = bot.reply_to(message, "⏳ Request processing:\n\n✅ Downloading audio...")
 
+    # 🍪 මෙන්න මෙතනට තමයි cookies.txt එකතු කරලා තියෙන්නේ
     ydl_opts = {
         'format': 'bestaudio/best',
         'outtmpl': '%(title)s.%(ext)s',
+        'cookiefile': 'cookies.txt',  # <-- Cookies ලබා ගන්නා ෆයිල් එක
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'mp3',
